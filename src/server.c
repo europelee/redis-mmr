@@ -2873,6 +2873,12 @@ void initServer(void) {
     }
     server.db = zmalloc(sizeof(redisDb)*server.dbnum);
 
+    /* Note: db_sd_list bitmap is initialized by applyDbSdList() during config loading,
+     * don't reset it here. Only initialize if not already set. */
+    if (server.db_sd_bitmap == NULL) {
+        server.db_sd_bitmap_size = 0;
+    }
+
     /* Create the Redis databases, and initialize other internal state. */
     int slot_count_bits = 0;
     int flags = KVSTORE_ALLOCATE_DICTS_ON_DEMAND;
@@ -3522,6 +3528,10 @@ static void propagateNow(int dbid, robj **argv, int argc, int target) {
     serverAssert(!(isPausedActions(PAUSE_ACTION_REPLICA) &&
                    (!server.client_pause_in_transaction)));
 
+    /* Check if this database should be synced (db_sd_list filtering) */
+    if (dbid >= 0 && !dbIndexInSdList(dbid))
+        return;
+
     if (server.aof_state != AOF_OFF && target & PROPAGATE_AOF)
         feedAppendOnlyFile(dbid,argv,argc);
     if (target & PROPAGATE_REPL) {
@@ -3546,6 +3556,10 @@ void alsoPropagate(int dbid, robj **argv, int argc, int target) {
     int j;
 
     if (!shouldPropagate(target))
+        return;
+
+    /* Check if this database should be synced (db_sd_list filtering) */
+    if (dbid >= 0 && !dbIndexInSdList(dbid))
         return;
 
     argvcopy = zmalloc(sizeof(robj*)*argc);
@@ -4887,6 +4901,9 @@ int finishShutdown(void) {
 
     /* Free the AOF manifest. */
     if (server.aof_manifest) aofManifestFree(server.aof_manifest);
+
+    /* Free db_sd_list */
+    freeDbSdList();
 
     /* Fire the shutdown modules event. */
     moduleFireServerEvent(REDISMODULE_EVENT_SHUTDOWN,0,NULL);

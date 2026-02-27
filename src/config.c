@@ -617,6 +617,9 @@ void loadServerConfigFromString(char *config) {
     if (server.config_hz < CONFIG_MIN_HZ) server.config_hz = CONFIG_MIN_HZ;
     if (server.config_hz > CONFIG_MAX_HZ) server.config_hz = CONFIG_MAX_HZ;
 
+    /* Apply db_sd_list configuration after all configs are loaded */
+    applyDbSdList(NULL);
+
     sdsfreesplitres(lines,totlines);
     reading_config_file = 0;
     return;
@@ -2670,6 +2673,40 @@ int updateClusterHumanNodename(const char **err) {
     return 1;
 }
 
+/* Apply db_sd_list configuration - database level filtering */
+int applyDbSdList(const char **err) {
+    UNUSED(err);
+
+    /* Free old configuration */
+    freeDbSdList();
+
+    /* Empty config means allow all databases (backward compatible) */
+    if (!server.db_sd_list_str || strlen(server.db_sd_list_str) == 0) {
+        return 1;
+    }
+
+    /* Parse comma-separated integer list and build bitmap */
+    int len;
+    sds *tokens = sdssplitlen(server.db_sd_list_str, strlen(server.db_sd_list_str), ",", 1, &len);
+    if (!tokens) {
+        return 1;
+    }
+
+    /* Create bitmap for fast lookup */
+    server.db_sd_bitmap_size = (server.dbnum + 7) / 8;
+    server.db_sd_bitmap = zcalloc(server.db_sd_bitmap_size);
+
+    for (int i = 0; i < len; i++) {
+        int dbid = atoi(tokens[i]);
+        if (dbid >= 0 && dbid < server.dbnum) {
+            server.db_sd_bitmap[dbid / 8] |= (1 << (dbid % 8));
+        }
+    }
+
+    sdsfreesplitres(tokens, len);
+    return 1;
+}
+
 static int applyTlsCfg(const char **err) {
     UNUSED(err);
 
@@ -3150,6 +3187,9 @@ standardConfig static_configs[] = {
     createStringConfig("req-res-logfile", NULL, IMMUTABLE_CONFIG | HIDDEN_CONFIG, EMPTY_STRING_IS_NULL, server.req_res_logfile, NULL, NULL, NULL),
 #endif
     createStringConfig("locale-collate", NULL, MODIFIABLE_CONFIG, ALLOW_EMPTY_STRING, server.locale_collate, "", NULL, updateLocaleCollate),
+
+    /* Selective sync/persist config */
+    createStringConfig("db_sd_list", NULL, MODIFIABLE_CONFIG, ALLOW_EMPTY_STRING, server.db_sd_list_str, "", NULL, applyDbSdList),
 
     /* SDS Configs */
     createSDSConfig("masterauth", NULL, MODIFIABLE_CONFIG | SENSITIVE_CONFIG, EMPTY_STRING_IS_NULL, server.masterauth, NULL, NULL, NULL),

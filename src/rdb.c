@@ -1399,6 +1399,14 @@ ssize_t rdbSaveDb(rio *rdb, int dbid, int rdbflags, long *key_counter, unsigned 
 
     redisDb *db = server.db + dbid;
     unsigned long long int db_size = kvstoreSize(db->keys);
+
+    /* Check if this database should be saved (db_sd_list filtering) */
+    if (!dbIndexInSdList(dbid)) {
+        /* Skip entire database */
+        *skipped += db_size;
+        return 0;
+    }
+
     if (db_size == 0) return 0;
 
     /* Write the SELECT DB opcode */
@@ -1448,6 +1456,7 @@ ssize_t rdbSaveDb(rio *rdb, int dbid, int rdbflags, long *key_counter, unsigned 
         expire = kvobjGetExpire(kv);
         if (server.memory_tracking_per_slot)
             oldsize = kvobjAllocSize(kv);
+
         res = rdbSaveKeyValuePair(rdb, &key, kv, expire, dbid);
         if (server.memory_tracking_per_slot)
             updateSlotAllocSize(db, curr_slot, oldsize, kvobjAllocSize(kv));

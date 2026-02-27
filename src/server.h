@@ -53,6 +53,7 @@ typedef long long ustime_t; /* microsecond time type. */
 #include "kvstore.h" /* Slot-based hash table */
 #include "estore.h"  /* Expiration store */
 #include "adlist.h"  /* Linked lists */
+#include "listpack.h" /* Compact list data structure */
 #include "zmalloc.h" /* total memory usage aware version of malloc/free */
 #include "anet.h"    /* Networking the easy way */
 #include "version.h" /* Version macro */
@@ -2049,6 +2050,11 @@ struct redisServer {
     int cluster_compatibility_sample_ratio; /* Sampling ratio for cluster mode incompatible commands. */
     int lazyexpire_nested_arbitrary_keys; /* If disabled, avoid lazy-expire from commands that touch arbitrary keys (SCAN/RANDOMKEY) within transactions */
 
+    /* Selective sync/persist configuration - database level */
+    char *db_sd_list_str;         /* String representation for CONFIG command */
+    unsigned long *db_sd_bitmap;  /* Bitmap for fast db index lookup */
+    size_t db_sd_bitmap_size;     /* Bitmap size in bytes */
+
     /* AOF persistence */
     int aof_enabled;                /* AOF configuration */
     int aof_state;                  /* AOF_(ON|OFF|WAIT_REWRITE) */
@@ -2913,6 +2919,11 @@ int redisSetProcTitle(char *title);
 int validateProcTitleTemplate(const char *template);
 int redisCommunicateSystemd(const char *sd_notify_msg);
 void redisSetCpuAffinity(const char *cpulist);
+
+/* db_sd_list - Selective sync/persist (database level) */
+int applyDbSdList(const char **err);
+int dbIndexInSdList(int dbid);
+void freeDbSdList(void);
 
 /* afterErrorReply flags */
 #define ERR_REPLY_FLAG_NO_STATS_UPDATE (1ULL<<0) /* Indicating that we should not update

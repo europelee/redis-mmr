@@ -1411,6 +1411,11 @@ void feedAppendOnlyFile(int dictid, robj **argv, int argc) {
 
     serverAssert(dictid == -1 || (dictid >= 0 && dictid < server.dbnum));
 
+    /* Check if this database should be persisted (db_sd_list filtering) */
+    if (dictid >= 0 && !dbIndexInSdList(dictid)) {
+        return;
+    }
+
     /* Feed timestamp if needed */
     if (server.aof_timestamp_enabled) {
         sds ts = genAofTimestampAnnotationIfNeeded(0);

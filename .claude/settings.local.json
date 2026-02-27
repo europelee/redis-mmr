@@ -1,0 +1,36 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cd /Users/europelee/workspace/projects/redis/src && make -j4 2>&1 | head -100)",
+      "Bash(make -j4 2>&1 | tail -100)",
+      "Bash(make -j4 2>&1 | tail -50)",
+      "Bash(cd /Users/europelee/workspace/projects/redis && make distclean && make -j4 2>&1 | tail -80)",
+      "Bash(cd /Users/europelee/workspace/projects/redis && ./runtest --single unit/db-sd-list 2>&1 | tail -100)",
+      "Bash(./redis-server --version && ./redis-cli --version)",
+      "Bash(cd /Users/europelee/workspace/projects/redis/src && ./redis-server --version)",
+      "Bash(./redis-server --port 26379 --daemonize yes && sleep 1 && ./redis-cli -p 26379 CONFIG GET db_sd_list && ./redis-cli -p 26379 SHUTDOWN NOSAVE 2>/dev/null || true)",
+      "Bash(./redis-server --port 26379 --daemonize yes && sleep 1 && ./redis-cli -p 26379 CONFIG SET db_sd_list \"key1,key2\" && ./redis-cli -p 26379 CONFIG GET db_sd_list && ./redis-cli -p 26379 SHUTDOWN NOSAVE 2>/dev/null || true)",
+      "Bash(./redis-server --port 26379 --daemonize yes && sleep 1 && ./redis-cli -p 26379 CONFIG SET db_sd_list \"key1,key2\" && ./redis-cli -p 26379 DEBUG SLEEP 0 && ./redis-cli -p 26379 CONFIG GET db_sd_list && ./redis-cli -p 26379 SHUTDOWN NOSAVE 2>/dev/null || true)",
+      "Bash(make -j4 2>&1 | tail -20)",
+      "Bash(cd /Users/europelee/workspace/projects/redis && ./runtest --single unit/db-sd-list 2>&1 | tail -60)",
+      "Bash(make -j4 2>&1 | tail -10 && cd /Users/europelee/workspace/projects/redis && ./runtest --single unit/db-sd-list 2>&1 | tail -40)",
+      "Bash(./runtest --single unit/db-sd-list 2>&1 | tail -40)",
+      "Bash(./runtest --single unit/db-sd-list 2>&1)",
+      "Bash(make -j4 2>&1 | tail -10 && ./runtest --single unit/db-sd-list 2>&1 | tail -30)",
+      "Bash(cd /Users/europelee/workspace/projects/redis/src && make -j4 2>&1 | tail -30)",
+      "Bash(cd /Users/europelee/workspace/projects/redis && ./runtest --single unit/db-sd-list 2>&1)",
+      "Bash(make -j4)",
+      "Bash(cd /Users/europelee/workspace/projects/redis/src && make -j4 2>&1 | tail -5 && cd .. && ./runtest --single unit/db-sd-list 2>&1 | grep -E \"All tests|WARNING|failed\")",
+      "Bash(cd /Users/europelee/workspace/projects/redis/src && make -j4 2>&1 | tail -5 && cd .. && ./runtest --single unit/db-sd-list 2>&1 | grep -E \"^\\\\[.*ok\\\\]:\" | wc -l)",
+      "Bash(./test_db_sd_list.sh start 2>&1)",
+      "Bash(./src/redis-cli -p 6379 CONFIG GET db_sd_list)",
+      "Bash(make -j8 2>&1 | tail -10)",
+      "Bash(./test_db_sd_list.sh test 2>&1)",
+      "Bash(./src/redis-cli -p 6379 DEBUG SLEEP 0 2>&1 || echo \"debug command not available\")",
+      "Bash(./src/redis-cli -p 6379 INFO replication | head -20)",
+      "Bash(make -j8 2>&1 | tail -5)",
+      "Bash(./src/redis-cli -p 6379 SHUTDOWN NOSAVE 2>/dev/null || true\n./src/redis-cli -p 6380 SHUTDOWN NOSAVE 2>/dev/null || true\nsleep 1\n./test_db_sd_list.sh start 2>&1)",
+      "Bash(./src/redis-cli -p 6379 SHUTDOWN NOSAVE 2>/dev/null || true\n./src/redis-cli -p 6380 SHUTDOWN NOSAVE 2>/dev/null || true)"
+    ]
+  }
+}
