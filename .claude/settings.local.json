@@ -30,7 +30,12 @@
       "Bash(./src/redis-cli -p 6379 INFO replication | head -20)",
       "Bash(make -j8 2>&1 | tail -5)",
       "Bash(./src/redis-cli -p 6379 SHUTDOWN NOSAVE 2>/dev/null || true\n./src/redis-cli -p 6380 SHUTDOWN NOSAVE 2>/dev/null || true\nsleep 1\n./test_db_sd_list.sh start 2>&1)",
-      "Bash(./src/redis-cli -p 6379 SHUTDOWN NOSAVE 2>/dev/null || true\n./src/redis-cli -p 6380 SHUTDOWN NOSAVE 2>/dev/null || true)"
+      "Bash(./src/redis-cli -p 6379 SHUTDOWN NOSAVE 2>/dev/null || true\n./src/redis-cli -p 6380 SHUTDOWN NOSAVE 2>/dev/null || true)",
+      "Bash(./src/redis-server --version && ./src/redis-server --port 26379 --daemonize yes && sleep 1 && ./src/redis-cli -p 26379 CONFIG GET databases && ./src/redis-cli -p 26379 SHUTDOWN NOSAVE 2>/dev/null || true)",
+      "Bash(git add tests/unit/db-sd-list.tcl)",
+      "Bash(git commit -m \"Add unit tests for db_sd_list configuration\n\nAdd comprehensive unit tests for the db_sd_list configuration option\nwhich controls selective sync and persist at database level.\n\nNew test cases cover:\n- Boundary value tests \\(out-of-range, negative, non-numeric, spaces, duplicates\\)\n- Configuration change tests \\(frequent changes, empty/value transitions\\)\n- Bitmap functionality tests \\(cross-byte boundary\\)\n- Server restart and CONFIG REWRITE persistence tests\")",
+      "Bash(git add .arch/README.md \".claude/settings.local.json\" \".arch/06-逻辑数据模型设计.md\")",
+      "Bash(git add .arch/README.md .claude/settings.local.json \".arch/06-选择性持久化机制.md\")"
     ]
   }
 }
